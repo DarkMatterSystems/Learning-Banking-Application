@@ -1,0 +1,72 @@
+
+| Banking Application Scenario
+
+trace all off
+trace display on
+trace events on
+trace states on
+
+initialise all
+
+| Steve Opens Account
+create event creation Banking_Application Customer New_customer "Steve" "Albania" 20.00
+
+| Steve Withdraws Money
+create event identity Banking_Application Account Withdrawal_submitted 4 10.00
+
+| Steve Writes Check
+create event identity Banking_Application Account Check_submitted 4 5.00
+
+| Sally Opens Account
+create event creation Banking_Application Customer New_customer "Sally" "Texas" 100.00
+
+| Sally Writes Check
+create event identity Banking_Application Account Check_submitted 5 20.00
+
+| Sally Makes Deposit
+create event identity Banking_Application Account Make_deposit 5 20.00
+
+display entity Banking_Application Account
+
+| Steve Writes Bouncing Check
+create event identity Banking_Application Account Check_submitted 4 10.00
+
+display entity Banking_Application Account
+
+| create event identity Banking_Application Account Account_ok 4
+
+| Steve Attempts to Withdraw Money
+create event identity Banking_Application Account Withdrawal_submitted 4 1000.00
+
+| Sally Makes Deposit
+create event identity Banking_Application Account Make_deposit 5 20.00
+
+| Steve Attempts to Write Check
+create event identity Banking_Application Account Check_submitted 4 100.00
+
+| Sally Makes Deposit
+create event identity Banking_Application Account Make_deposit 5 20.00
+
+display entity Banking_Application Account
+
+| Steve Attempts to Close Account
+create event identity Banking_Application Account Close_account 4
+
+| Sally Writes Check
+create event identity Banking_Application Account Check_submitted 5 140.00
+
+| Sally Closes Account
+create event identity Banking_Application Account Close_account 5
+
+| Steve Makes Deposit
+create event identity Banking_Application Account Make_deposit 4 85.00
+
+| Steve Closes Account
+create event identity Banking_Application Account Close_account 4
+
+
+host pause
+
+exit
+
+| Copyright (C) 2017 Dark Matter Systems Ltd. All rights reserved.

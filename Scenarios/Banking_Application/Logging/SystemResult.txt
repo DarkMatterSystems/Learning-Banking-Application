@@ -1,0 +1,75 @@
+
+    Customer Registered
+        Full Name: Steve
+        Address:   Albania
+
+    Account Opened
+        Account Number: 10000003
+        New Balance:    $0.000000
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $20.000000
+
+    Withdrawal Accepted
+        Amount:      $10.000000
+        New Balance: $10.000000
+
+    Pay Cheque
+        Amount:      $5.000000
+        New Balance: $5.000000
+
+    Customer Registered
+        Full Name: Sally
+        Address:   Texas
+
+    Account Opened
+        Account Number: 10000004
+        New Balance:    $0.000000
+
+    Deposit Taken
+        Amount:      $100.000000
+        New Balance: $100.000000
+
+    Pay Cheque
+        Amount:      $20.000000
+        New Balance: $80.000000
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $100.000000
+
+    Return Cheque
+        Amount:                    $10.000000
+        Charged Bounced Check Fee: $75.000000
+        New Balance:               $-70.000000
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $120.000000
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $140.000000
+
+    Pay Cheque
+        Amount:      $140.000000
+        New Balance: $0.000000
+
+    Account Closed
+        Account Number: 10000004
+        Pay Out:        $0.000000
+
+    Customer Leaves
+        Full Name: Sally
+
+    Deposit Taken
+        Amount:      $85.000000
+        New Balance: $15.000000
+
+    Account Closed
+        Account Number: 10000003
+        Pay Out:        $15.000000
+
+    Customer Leaves
+        Full Name: Steve

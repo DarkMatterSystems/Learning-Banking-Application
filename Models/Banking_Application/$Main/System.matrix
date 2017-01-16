@@ -1,0 +1,364 @@
+
+System:Banking_Application
+
+    | Copyright (C) 2017 Dark Matter Systems Ltd. All rights reserved.
+
+    Description
+        Paragraph:Title
+            Banking Application Model
+        Paragraph:Content
+            This model is taken from the book Object Lifecycles: Modeling
+            the World in States by Sally Shlaer and Stephen J. Mellor.
+            It appears here in a slightly modified form.
+        Paragraph:Note
+            The model is described on page 71.
+
+    Type
+        BaseType
+            Integer
+                Account_Number : 10000000 .. 99999999
+            Fixed
+                Money : 0.001 : -100.00 .. +10_000_000.00
+            String
+                Name     :  30
+                Location : 100
+
+    Matrix:Model:Application
+        Silo:M1:Software_Application
+            Realm:Analysis_Of_Application
+                Domain:Banking_Application
+
+                    EventContext
+                        ImportEvent
+                            Customer : New_customer
+                            Account  : Make_deposit
+                            Account  : Withdrawal_submitted
+                            Account  : Check_submitted
+                            Account  : Close_account
+
+
+                    Entity:Customer
+                        Attribute
+                            Name     : Full_name
+                            Location : Address
+                        Relationship
+                            Owns        ->> Account
+                            Governed_by --> Bank_Policy
+                        State
+
+                            Dataset:Accept
+                                Name     : Full_name
+                                Location : Address
+                                Money    : Amount
+
+                            CreationDataState:Accepting_New_Customer:Accept
+                                StateAction
+                                    Assignment
+                                        SetString
+                                            Customer.Full_name := Full_name
+                                            Customer.Address   := Address
+                                    Template
+                                        <<:>>    Customer Registered
+                                        <<:>>        Full Name: <<#Customer.Full_name>>
+                                        <<:>>        Address:   <<#Customer.Address>>
+                                        <<:>>
+                                    CreateActive:Account:Creating_Account
+                                        Relate
+                                            Account  : Owned_by : Customer
+                                            Customer : Owns     : Account
+                                        Assignment
+                                            SetFixed
+                                                Account.Balance := <<FixedZero>>
+                                        EntitySelection:Bank_Policy
+                                            Selection
+                                                Relate
+                                                    Customer : Governed_by : Bank_Policy
+                                                Assignment
+                                                    SetInteger
+                                                        Account.Number := Bank_Policy.Next_account_number
+                                                    Evaluation:Bank_Policy.Next_account_number
+                                                        Addition
+                                                            AdditionData
+                                                                Bank_Policy.Next_account_number
+                                                                <<IntegerOne>>
+                                                GenerateDataEvent:Account:Make_deposit
+                                                    Amount : Amount
+                                        Template
+                                            <<:>>    Account Opened
+                                            <<:>>        Account Number: <<#Account.Number>>
+                                            <<:>>        New Balance:    $<<#Account.Balance>>
+                                            <<:>>
+                                Transition
+                                    EventState
+                                        Last_account_closed -> Customer_Vanishes
+                                    CannotHappen
+                                        New_customer
+
+                            DeletionState:Customer_Vanishes
+                                StateAction
+                                    Traverse
+                                        Navigation
+                                            Customer : Owns : Account
+                                        TraverseSelection
+                                            Unrelate
+                                                Customer : Owns : Account
+                                    Traverse
+                                        Navigation
+                                            Customer : Governed_by : Bank_Policy
+                                        TraverseSelection
+                                            Unrelate
+                                                Customer : Governed_by : Bank_Policy
+                                    Template
+                                        <<:>>    Customer Leaves
+                                        <<:>>        Full Name: <<#Customer.Full_name>>
+                                        <<:>>
+                                Transition
+                                    EventState
+                                        New_customer -> Accepting_New_Customer
+                                    CannotHappen
+                                        Last_account_closed
+
+
+                    Entity:Account
+                        Attribute
+                            Account_Number : Number
+                            Money          : Balance
+                        Relationship
+                            Owned_by --> Customer
+                        State
+
+                            Dataset:Transaction
+                                Money : Amount
+
+                            CreationState:Creating_Account
+                                Transition
+                                    EventState
+                                        Make_deposit -> Taking_Deposit
+                                    CannotHappen
+                                        Account_ok
+                                        Withdrawal_submitted
+                                        Check_submitted
+                                        Overdrawn
+                                        Close_account
+
+                            DynamicDataState:Taking_Deposit:Transaction
+                                StateAction
+                                    Assignment
+                                        Evaluation:Account.Balance
+                                            Addition
+                                                AdditionData
+                                                    Account.Balance
+                                                    Amount
+                                    Template
+                                        <<:>>    Deposit Taken
+                                        <<:>>        Amount:      $<<#Amount>>
+                                        <<:>>        New Balance: $<<#Account.Balance>>
+                                        <<:>>
+                                    CaseSelection
+                                        WhenCase
+                                            ConditionAnd
+                                                TestAnd
+                                                    Account.Balance >= <<FixedZero>>
+                                            WhenCaseSelection
+                                                GenerateEvent
+                                                    Account : Account_ok
+                                        NullCaseSelection
+                                            GenerateEvent
+                                                Account : Overdrawn
+                                Transition
+                                    EventState
+                                        Account_ok -> In_Good_Standing
+                                        Overdrawn  -> Overdrawn
+                                    CannotHappen
+                                        Make_deposit
+                                        Withdrawal_submitted
+                                        Check_submitted
+                                        Close_account
+
+                            DynamicState:In_Good_Standing
+                                Transition
+                                    EventState
+                                        Make_deposit         -> Taking_Deposit
+                                        Withdrawal_submitted -> Considering_Withdrawal
+                                        Check_submitted      -> Considering_Check
+                                        Close_account        -> Closed
+                                    CannotHappen
+                                        Account_ok
+                                        Overdrawn
+
+                            DynamicDataState:Considering_Withdrawal:Transaction
+                                StateAction
+                                    CaseSelection
+                                        WhenCase
+                                            ConditionAnd
+                                                TestAnd
+                                                    Amount <= Account.Balance
+                                            WhenCaseSelection
+                                                Assignment
+                                                    Evaluation:Account.Balance
+                                                        Addition
+                                                            AdditionData
+                                                                +Account.Balance
+                                                                -Amount
+                                                Template
+                                                    <<:>>    Withdrawal Accepted
+                                                    <<:>>        Amount:      $<<#Amount>>
+                                                    <<:>>        New Balance: $<<#Account.Balance>>
+                                                    <<:>>
+                                                GenerateEvent
+                                                    Account : Account_ok
+                                        NullCaseSelection
+                                            Template
+                                                <<:>>    Withdrawal Rejected
+                                                <<:>>        Amount:  $<<#Amount>>
+                                                <<:>>        Balance: $<<#Account.Balance>>
+                                                <<:>>
+                                Transition
+                                    EventState
+                                        Account_ok -> In_Good_Standing
+                                    CannotHappen
+                                        Make_deposit
+                                        Withdrawal_submitted
+                                        Check_submitted
+                                        Overdrawn
+                                        Close_account
+
+                            DynamicDataState:Considering_Check:Transaction
+                                StateAction
+                                    CaseSelection
+                                        WhenCase
+                                            ConditionAnd
+                                                TestAnd
+                                                    Amount >> Account.Balance
+                                            WhenCaseSelection
+                                                Traverse
+                                                    Navigation
+                                                        Account  : Owned_by    : Customer
+                                                        Customer : Governed_by : Bank_Policy
+                                                    TraverseSelection
+                                                        Assignment
+                                                            Evaluation:Account.Balance
+                                                                Addition
+                                                                    AdditionData
+                                                                        +Account.Balance
+                                                                        -Bank_Policy.Bounced_check_fee
+                                                        Template
+                                                            <<:>>    Return Cheque
+                                                            <<:>>        Amount:                    $<<#Amount>>
+                                                            <<:>>        Charged Bounced Check Fee: $
+                                                            <<|>><<#Bank_Policy.Bounced_check_fee>>
+                                                            <<:>>        New Balance:               $<<#Account.Balance>>
+                                                            <<:>>
+                                        NullCaseSelection
+                                            Assignment
+                                                Evaluation:Account.Balance
+                                                    Addition
+                                                        AdditionData
+                                                            +Account.Balance
+                                                            -Amount
+                                            Template
+                                                <<:>>    Pay Cheque
+                                                <<:>>        Amount:      $<<#Amount>>
+                                                <<:>>        New Balance: $<<#Account.Balance>>
+                                                <<:>>
+                                    CaseSelection
+                                        WhenCase
+                                            ConditionAnd
+                                                TestAnd
+                                                    Account.Balance >= <<FixedZero>>
+                                            WhenCaseSelection
+                                                GenerateEvent
+                                                    Account : Account_ok
+                                        NullCaseSelection
+                                            GenerateEvent
+                                                Account : Overdrawn
+                                Transition
+                                    EventState
+                                        Account_ok -> In_Good_Standing
+                                        Overdrawn  -> Overdrawn
+                                    CannotHappen
+                                        Make_deposit
+                                        Withdrawal_submitted
+                                        Check_submitted
+                                        Close_account
+
+                            DynamicState:Overdrawn
+                                Transition
+                                    EventState
+                                        Make_deposit -> Taking_Deposit
+                                    IgnoreEvent
+                                        Withdrawal_submitted
+                                        Check_submitted
+                                        Close_account
+                                    CannotHappen
+                                        Account_ok
+                                        Overdrawn
+
+                            DeletionState:Closed
+                                StateAction
+                                    Traverse
+                                        Navigation
+                                            Account : Owned_by : Customer
+                                        TraverseSelection
+                                            Unrelate
+                                                Account : Owned_by : Customer
+                                            Traverse
+                                                Navigation
+                                                    Customer : Owns : Account
+                                                TraverseSelection
+                                                    SelectionHead
+                                                        SelectionLast
+                                                            GenerateEvent
+                                                                Customer : Last_account_closed
+                                    Template
+                                        <<:>>    Account Closed
+                                        <<:>>        Account Number: <<#Account.Number>>
+                                        <<:>>        Pay Out:        $<<#Account.Balance>>
+                                        <<:>>
+                                Transition
+                                    CannotHappen
+                                        Make_deposit
+                                        Account_ok
+                                        Withdrawal_submitted
+                                        Check_submitted
+                                        Overdrawn
+                                        Close_account
+
+
+                    Entity:Bank_Policy
+                        Attribute
+                            Account_Number : Next_account_number
+                            Money          : Bounced_check_fee
+
+
+        Silo:M0:Real_World_Objects
+            RealmObject:Objects_Of_Application
+                DomainObject:Banking_Application
+                    |
+                    EntityObject:Customer
+                        Object
+                            | Identity | Status                 | Full_name | Address
+                            ID001      : Accepting_New_Customer : "Mike"    : "London"
+                        ObjectRelation:Governed_by:Bank_Policy
+                            | Identity | Identity
+                            ID001      : ID001
+                        ObjectRelation:Owns:Account
+                            | Identity | Identity
+                            ID001      : ID001
+                    |
+                    EntityObject:Account
+                        Object
+                            | Identity | Status           | Number   | Balance
+                            ID001      : In_Good_Standing : 10000000 :    5.00
+                            ID002      : In_Good_Standing : 10000001 :   10.00
+                            ID003      : In_Good_Standing : 10000002 :   15.00
+                        ObjectRelation:Owned_by:Customer
+                            | Identity | Identity
+                            ID001      : ID001
+                            ID002      : ID001
+                            ID003      : ID001
+                    |
+                    EntityObject:Bank_Policy
+                        Object
+                            | Identity | Next_account_number | Bounced_check_fee
+                            ID001      :            10000003 :             75.00

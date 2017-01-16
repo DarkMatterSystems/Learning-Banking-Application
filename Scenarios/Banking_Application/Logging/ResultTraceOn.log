@@ -1,0 +1,321 @@
+
+    Matrix Model Simulator - Learning Edition - Version 1.0.0
+    Development on THU-02-JAN-2014 @ 11:42:51
+    Copyright (C) 2014, Dark Matter Systems Ltd.  All rights reserved.
+
+    Connection established: MATRIX*CORE - Version 0.5.2
+
+$
+$ | Banking Application Scenario
+$
+$ trace all on
+$ trace display on
+$ trace events on
+$ trace states on
+$
+$ initialise all
+$
+$ | Steve Opens Account
+$ create event creation Banking_Application Customer New_customer "Steve" "Albania" 20.00
+
+EVENT (0:0) - Customer[] New_customer (Full_name:"Steve", Address:"Albania", Amount:20.000000)
+
+STATE (54:47) - Customer[2] Accepting_New_Customer {New_customer} (Full_name:"Steve", Address:"Albania", Amount:20.000000)
+
+    Customer Registered
+        Full Name: Steve
+        Address:   Albania
+
+EVENT (84:67) - Account[4] Make_deposit (Amount:20.000000)
+
+    Account Opened
+        Account Number: 10000003
+        New Balance:    $0.000000
+
+STATE (144:46) - Account[4] Taking_Deposit {Make_deposit -> Creating_Account} (Amount:20.000000)
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $20.000000
+
+EVENT (164:53) - Account[4] Account_ok ()
+
+STATE (178:42) - Account[4] In_Good_Standing {Account_ok -> Taking_Deposit} ()
+
+$
+$ | Steve Withdraws Money
+$ create event identity Banking_Application Account Withdrawal_submitted 4 10.00
+
+EVENT (0:0) - Account[4] Withdrawal_submitted (Amount:10.000000)
+
+STATE (189:46) - Account[4] Considering_Withdrawal {Withdrawal_submitted -> In_Good_Standing} (Amount:10.000000)
+
+    Withdrawal Accepted
+        Amount:      $10.000000
+        New Balance: $10.000000
+
+EVENT (209:53) - Account[4] Account_ok ()
+
+STATE (178:42) - Account[4] In_Good_Standing {Account_ok -> Considering_Withdrawal} ()
+
+$
+$ | Steve Writes Check
+$ create event identity Banking_Application Account Check_submitted 4 5.00
+
+EVENT (0:0) - Account[4] Check_submitted (Amount:5.000000)
+
+STATE (226:46) - Account[4] Considering_Check {Check_submitted -> In_Good_Standing} (Amount:5.000000)
+
+    Pay Cheque
+        Amount:      $5.000000
+        New Balance: $5.000000
+
+EVENT (271:53) - Account[4] Account_ok ()
+
+STATE (178:42) - Account[4] In_Good_Standing {Account_ok -> Considering_Check} ()
+
+$
+$ | Sally Opens Account
+$ create event creation Banking_Application Customer New_customer "Sally" "Texas" 100.00
+
+EVENT (0:0) - Customer[] New_customer (Full_name:"Sally", Address:"Texas", Amount:100.000000)
+
+STATE (54:47) - Customer[3] Accepting_New_Customer {New_customer} (Full_name:"Sally", Address:"Texas", Amount:100.000000)
+
+    Customer Registered
+        Full Name: Sally
+        Address:   Texas
+
+EVENT (84:67) - Account[5] Make_deposit (Amount:100.000000)
+
+    Account Opened
+        Account Number: 10000004
+        New Balance:    $0.000000
+
+STATE (144:46) - Account[5] Taking_Deposit {Make_deposit -> Creating_Account} (Amount:100.000000)
+
+    Deposit Taken
+        Amount:      $100.000000
+        New Balance: $100.000000
+
+EVENT (164:53) - Account[5] Account_ok ()
+
+STATE (178:42) - Account[5] In_Good_Standing {Account_ok -> Taking_Deposit} ()
+
+$
+$ | Sally Writes Check
+$ create event identity Banking_Application Account Check_submitted 5 20.00
+
+EVENT (0:0) - Account[5] Check_submitted (Amount:20.000000)
+
+STATE (226:46) - Account[5] Considering_Check {Check_submitted -> In_Good_Standing} (Amount:20.000000)
+
+    Pay Cheque
+        Amount:      $20.000000
+        New Balance: $80.000000
+
+EVENT (271:53) - Account[5] Account_ok ()
+
+STATE (178:42) - Account[5] In_Good_Standing {Account_ok -> Considering_Check} ()
+
+$
+$ | Sally Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 5 20.00
+
+EVENT (0:0) - Account[5] Make_deposit (Amount:20.000000)
+
+STATE (144:46) - Account[5] Taking_Deposit {Make_deposit -> In_Good_Standing} (Amount:20.000000)
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $100.000000
+
+EVENT (164:53) - Account[5] Account_ok ()
+
+STATE (178:42) - Account[5] In_Good_Standing {Account_ok -> Taking_Deposit} ()
+
+$
+$ display entity Banking_Application Account
+
+Account:
+    Identity  Status            Number    Balance
+    ~~~~~~~~  ~~~~~~~~~~~~~~~~  ~~~~~~~~  ~~~~~~~~~~
+           1  In_Good_Standing  10000000    5.000000
+           2  In_Good_Standing  10000001   10.000000
+           3  In_Good_Standing  10000002   15.000000
+           4  In_Good_Standing  10000003    5.000000
+           5  In_Good_Standing  10000004  100.000000
+
+$
+$ | Steve Writes Bouncing Check
+$ create event identity Banking_Application Account Check_submitted 4 10.00
+
+EVENT (0:0) - Account[4] Check_submitted (Amount:10.000000)
+
+STATE (226:46) - Account[4] Considering_Check {Check_submitted -> In_Good_Standing} (Amount:10.000000)
+
+    Return Cheque
+        Amount:                    $10.000000
+        Charged Bounced Check Fee: $75.000000
+        New Balance:               $-70.000000
+
+EVENT (274:49) - Account[4] Overdrawn ()
+
+STATE (285:42) - Account[4] Overdrawn {Overdrawn -> Considering_Check} ()
+
+$
+$ display entity Banking_Application Account
+
+Account:
+    Identity  Status            Number    Balance
+    ~~~~~~~~  ~~~~~~~~~~~~~~~~  ~~~~~~~~  ~~~~~~~~~~
+           1  In_Good_Standing  10000000    5.000000
+           2  In_Good_Standing  10000001   10.000000
+           3  In_Good_Standing  10000002   15.000000
+           4  Overdrawn         10000003  -70.000000
+           5  In_Good_Standing  10000004  100.000000
+
+$
+$ | create event identity Banking_Application Account Account_ok 4
+$
+$ | Steve Attempts to Withdraw Money
+$ create event identity Banking_Application Account Withdrawal_submitted 4 1000.00
+
+EVENT (0:0) - Account[4] Withdrawal_submitted (Amount:1000.000000)
+
+$
+$ | Sally Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 5 20.00
+
+EVENT (0:0) - Account[5] Make_deposit (Amount:20.000000)
+
+STATE (144:46) - Account[5] Taking_Deposit {Make_deposit -> In_Good_Standing} (Amount:20.000000)
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $120.000000
+
+EVENT (164:53) - Account[5] Account_ok ()
+
+STATE (178:42) - Account[5] In_Good_Standing {Account_ok -> Taking_Deposit} ()
+
+$
+$ | Steve Attempts to Write Check
+$ create event identity Banking_Application Account Check_submitted 4 100.00
+
+EVENT (0:0) - Account[4] Check_submitted (Amount:100.000000)
+
+$
+$ | Sally Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 5 20.00
+
+EVENT (0:0) - Account[5] Make_deposit (Amount:20.000000)
+
+STATE (144:46) - Account[5] Taking_Deposit {Make_deposit -> In_Good_Standing} (Amount:20.000000)
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $140.000000
+
+EVENT (164:53) - Account[5] Account_ok ()
+
+STATE (178:42) - Account[5] In_Good_Standing {Account_ok -> Taking_Deposit} ()
+
+$
+$ display entity Banking_Application Account
+
+Account:
+    Identity  Status            Number    Balance
+    ~~~~~~~~  ~~~~~~~~~~~~~~~~  ~~~~~~~~  ~~~~~~~~~~
+           1  In_Good_Standing  10000000    5.000000
+           2  In_Good_Standing  10000001   10.000000
+           3  In_Good_Standing  10000002   15.000000
+           4  Overdrawn         10000003  -70.000000
+           5  In_Good_Standing  10000004  140.000000
+
+$
+$ | Steve Attempts to Close Account
+$ create event identity Banking_Application Account Close_account 4
+
+EVENT (0:0) - Account[4] Close_account ()
+
+$
+$ | Sally Writes Check
+$ create event identity Banking_Application Account Check_submitted 5 140.00
+
+EVENT (0:0) - Account[5] Check_submitted (Amount:140.000000)
+
+STATE (226:46) - Account[5] Considering_Check {Check_submitted -> In_Good_Standing} (Amount:140.000000)
+
+    Pay Cheque
+        Amount:      $140.000000
+        New Balance: $0.000000
+
+EVENT (271:53) - Account[5] Account_ok ()
+
+STATE (178:42) - Account[5] In_Good_Standing {Account_ok -> Considering_Check} ()
+
+$
+$ | Sally Closes Account
+$ create event identity Banking_Application Account Close_account 5
+
+EVENT (0:0) - Account[5] Close_account ()
+
+STATE (297:43) - Account[5] Closed {Close_account -> In_Good_Standing} ()
+
+EVENT (312:65) - Customer[3] Last_account_closed ()
+
+    Account Closed
+        Account Number: 10000004
+        Pay Out:        $0.000000
+
+STATE (97:43) - Customer[3] Customer_Vanishes {Last_account_closed -> Accepting_New_Customer} ()
+
+    Customer Leaves
+        Full Name: Sally
+
+$
+$ | Steve Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 4 85.00
+
+EVENT (0:0) - Account[4] Make_deposit (Amount:85.000000)
+
+STATE (144:46) - Account[4] Taking_Deposit {Make_deposit -> Overdrawn} (Amount:85.000000)
+
+    Deposit Taken
+        Amount:      $85.000000
+        New Balance: $15.000000
+
+EVENT (164:53) - Account[4] Account_ok ()
+
+STATE (178:42) - Account[4] In_Good_Standing {Account_ok -> Taking_Deposit} ()
+
+$
+$ | Steve Closes Account
+$ create event identity Banking_Application Account Close_account 4
+
+EVENT (0:0) - Account[4] Close_account ()
+
+STATE (297:43) - Account[4] Closed {Close_account -> In_Good_Standing} ()
+
+EVENT (312:65) - Customer[2] Last_account_closed ()
+
+    Account Closed
+        Account Number: 10000003
+        Pay Out:        $15.000000
+
+STATE (97:43) - Customer[2] Customer_Vanishes {Last_account_closed -> Accepting_New_Customer} ()
+
+    Customer Leaves
+        Full Name: Steve
+
+$
+$
+$ host pause
+Press any key to continue . . .
+$
+$ exit
+
+        Model Simulation Elapsed Time: 00:00:01
+
+    Disconnected from MATRIX*CORE on THU-02-JAN-2014 @ 11:42:52

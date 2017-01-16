@@ -1,0 +1,173 @@
+
+    Matrix Model Simulator - Learning Edition - Version 1.0.0
+    Development on THU-02-JAN-2014 @ 11:38:09
+    Copyright (C) 2014, Dark Matter Systems Ltd.  All rights reserved.
+
+    Connection established: MATRIX*CORE - Version 0.5.2
+
+$
+$ | Banking Application Scenario
+$
+$ trace all off
+$ trace display on
+$ trace events on
+$ trace states on
+$
+$ initialise all
+$
+$ | Steve Opens Account
+$ create event creation Banking_Application Customer New_customer "Steve" "Albania" 20.00
+
+    Customer Registered
+        Full Name: Steve
+        Address:   Albania
+
+    Account Opened
+        Account Number: 10000003
+        New Balance:    $0.000000
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $20.000000
+
+$
+$ | Steve Withdraws Money
+$ create event identity Banking_Application Account Withdrawal_submitted 4 10.00
+
+    Withdrawal Accepted
+        Amount:      $10.000000
+        New Balance: $10.000000
+
+$
+$ | Steve Writes Check
+$ create event identity Banking_Application Account Check_submitted 4 5.00
+
+    Pay Cheque
+        Amount:      $5.000000
+        New Balance: $5.000000
+
+$
+$ | Sally Opens Account
+$ create event creation Banking_Application Customer New_customer "Sally" "Texas" 100.00
+
+    Customer Registered
+        Full Name: Sally
+        Address:   Texas
+
+    Account Opened
+        Account Number: 10000004
+        New Balance:    $0.000000
+
+    Deposit Taken
+        Amount:      $100.000000
+        New Balance: $100.000000
+
+$
+$ | Sally Writes Check
+$ create event identity Banking_Application Account Check_submitted 5 20.00
+
+    Pay Cheque
+        Amount:      $20.000000
+        New Balance: $80.000000
+
+$
+$ | Sally Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 5 20.00
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $100.000000
+
+$
+$ display entity Banking_Application Account
+$
+$ | Steve Writes Bouncing Check
+$ create event identity Banking_Application Account Check_submitted 4 10.00
+
+    Return Cheque
+        Amount:                    $10.000000
+        Charged Bounced Check Fee: $75.000000
+        New Balance:               $-70.000000
+
+$
+$ display entity Banking_Application Account
+$
+$ | create event identity Banking_Application Account Account_ok 4
+$
+$ | Steve Attempts to Withdraw Money
+$ create event identity Banking_Application Account Withdrawal_submitted 4 1000.00
+
+$
+$ | Sally Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 5 20.00
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $120.000000
+
+$
+$ | Steve Attempts to Write Check
+$ create event identity Banking_Application Account Check_submitted 4 100.00
+
+$
+$ | Sally Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 5 20.00
+
+    Deposit Taken
+        Amount:      $20.000000
+        New Balance: $140.000000
+
+$
+$ display entity Banking_Application Account
+$
+$ | Steve Attempts to Close Account
+$ create event identity Banking_Application Account Close_account 4
+
+$
+$ | Sally Writes Check
+$ create event identity Banking_Application Account Check_submitted 5 140.00
+
+    Pay Cheque
+        Amount:      $140.000000
+        New Balance: $0.000000
+
+$
+$ | Sally Closes Account
+$ create event identity Banking_Application Account Close_account 5
+
+    Account Closed
+        Account Number: 10000004
+        Pay Out:        $0.000000
+
+    Customer Leaves
+        Full Name: Sally
+
+$
+$ | Steve Makes Deposit
+$ create event identity Banking_Application Account Make_deposit 4 85.00
+
+    Deposit Taken
+        Amount:      $85.000000
+        New Balance: $15.000000
+
+$
+$ | Steve Closes Account
+$ create event identity Banking_Application Account Close_account 4
+
+    Account Closed
+        Account Number: 10000003
+        Pay Out:        $15.000000
+
+    Customer Leaves
+        Full Name: Steve
+
+$
+$
+$ host pause
+Press any key to continue . . .
+$
+$ exit
+
+        Model Simulation Elapsed Time: 00:00:01
+
+    Disconnected from MATRIX*CORE on THU-02-JAN-2014 @ 11:38:10
